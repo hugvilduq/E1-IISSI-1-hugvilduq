@@ -1,0 +1,162 @@
+@startuml
+'Opciones gráficas
+skinparam linetype ortho
+skinparam arrow {
+FontSize 20
+}
+'--------------------------------------
+'Enumerados
+'--------------------------------------
+
+enum E_MetodoAcceso <<Enum>>{
+    selectividad
+    ciclo
+    mayor
+    titulado_extranjero
+}
+
+enum E_TipoAsignatura <<Enum>>{
+    obligatoria
+    optativa
+    formacion_basica
+}
+
+enum E_TipoProfesor <<Enum>>{
+    catedratico
+    titular_de_universidad
+    profesor_contratado_doctor
+    profesor_ayudante_doctor
+}
+
+'--------------------------------------
+'Entidades
+'--------------------------------------
+class Alumno{
+    dni: String
+    nombre: String
+    apellidos: String
+    fecha_nacimiento: Date
+    email: String
+    metodo_acceso: E_MetodoAcceso
+}
+class Asignatura{
+    nombre: String
+    acronimo: String
+    creditos: Integer
+    curso: Integer
+    tipo: E_TipoAsignatura
+}
+
+class CargaDocente{
+    carga_docente: Integer
+}
+
+class Departamento{
+    nombre: String
+}
+
+class Grado{
+    nombre: String
+    num_anyos: Integer
+    num_creditos: Integer
+}
+
+class Grupo{
+    nombre:String
+    anyo_academico:Integer
+    creditos: Integer
+}
+
+class GrupoLab{
+}
+
+class GrupoTeo{
+}
+
+class Nota{
+    valor: Double
+    numero_convocatoria: Integer
+    matricula_honor: Boolean
+}
+
+class Profesor {
+    dni: String
+    nombre: String
+    apellidos: String
+    fecha_nacimiento: Date
+    email: String
+    categoria: E_TipoProfesor
+}
+
+
+
+'--------------------------------------
+'Asociaciones
+'--------------------------------------
+
+Alumno "1..*" -- "1..*" Asignatura: "se matricula en >"
+Alumno "1..*" --* "1..*" Grupo
+Asignatura "1" --* "1..*" Grado
+Asignatura "1" -- "1..*" Departamento: "es coordinada por >"
+Departamento "1" *-- "1..*" Profesor: ""
+Grupo "1..*" --* "1" Asignatura: ""
+GrupoLab "0..*" --o "1" Grupo:""
+GrupoTeo "1..*" --* "1" Grupo: ""
+(GrupoTeo,Alumno) . Nota  
+Profesor "1..*" -- "1..*" Grupo: " da clase a >"
+(Profesor,Grupo) . CargaDocente
+
+
+' --------------------------------------
+' Restricciones
+' --------------------------------------
+
+
+note right of Asignatura
+<b><u>{RN-012} Acrónimos bien formados </u></b>
+Un acrónimo tiene que estar bien formado,
+se entiende que lo está cuando coincide
+con las letras mayúsculas que aparecen 
+en el nombre de la asignatura
+endnote
+
+note right of CargaDocente
+<b><u>{RN-001} Limitación créditos docentes </u></b>
+Un profesor no imparte >24 créditos por 
+curso académico.
+endnote
+
+note right of Departamento
+<b><u>{RN-014} Profesores por departamento </u></b>
+En cada departamento se tiene que cumplir
+ que #CU+#TU > #PCD+#PAD .
+endnote
+
+note bottom of Grupo
+<b><u>{RN-011} Alumnos máximos en grupos </u></b>
+Un grupo de teoría no puede tener más de 75 alumnos, 
+y uno de laboratorio no más de 25.
+endnote
+
+note top of GrupoTeo 
+<b><u>{RI-008} Información sobre grupos </u></b>
+El nº de alumnos debe ser >15
+endnote 
+
+note right of Nota
+<b><u>{RN-006} Matrícula de honor </u></b>
+Para que una nota sea matrícula de honor 
+es necesario que su valor sea igual o
+superior a 9.
+
+<b><u>{RN-007} Nota por alumno </u></b>
+Un alumno no puede tener más de
+una nota para la misma asignatura, 
+convocatoria y añoacadémico
+
+<b><u>{RN-010} Cambios bruscos en notas </u></b>
+Una nota no puede alterarse de una vez
+en más de 4 puntos (aumentada o disminuida)
+endnote
+
+@enduml

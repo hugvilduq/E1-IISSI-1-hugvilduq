@@ -1,0 +1,96 @@
+@startuml
+'Opciones gráficas
+skinparam linetype ortho
+skinparam arrow {
+FontSize 20
+}
+'--------------------------------------
+'Enumerados
+'--------------------------------------
+
+enum E_TipoClase <<Enum>>{
+    teoria
+    laboratorio
+}
+enum E_TipoProfesor <<Enum>>{
+    catedratico
+    titular_de_universidad
+    profesor_contratado_doctor
+    profesor_ayudante_doctor
+}
+'--------------------------------------
+'Entidades
+'--------------------------------------
+
+class Aula{
+    tiene_megafonia: Boolean
+    tiene_proyector: Boolean
+    actividad: E_TipoClase
+}
+
+class Despacho{
+}
+
+class Espacio{
+    nombre: String
+    planta: Integer
+    capacidad: Integer
+}
+
+class Profesor {
+    dni: String
+    nombre: String
+    apellidos: String
+    fecha_nacimiento: Date
+    email: String
+    categoria: E_TipoProfesor
+}
+
+'--------------------------------------
+'Asociaciones
+'--------------------------------------
+
+Espacio "1" o-- "0..1" Aula
+Espacio "1" o-- "0..1" Despacho: ""
+Profesor "1" -- "*" Despacho: "tiene asignado >"
+
+
+' --------------------------------------
+' Restricciones
+' --------------------------------------
+
+note right of Aula
+<b><u>{RN-015} Capacidad de aula máxima </u></b>
+Cada aula debe tener capacidad suficiente
+para los grupos que se imparten en la misma.
+
+<b><u>{RN-021} Aulas de teoría y prácticas </u></b>
+Los grupos de teoría se impartirán en aulas
+de teoría y los grupos de laboratorio en aulas de
+laboratorio.
+endnote
+
+note top of Espacio
+<b><u>{RN-016} Nombre de espacios bien formados </u></b>
+El nombre de un espacio sigue el siguiente formato 
+(dependiendo de si es despacho o aula): {D|A}.{Planta}.{Natural}. 
+Ej: D.0.23 (despacho 23 de la planta baja), A.1.14
+(aula 14 de la planta 1).
+endnote
+
+note top of Profesor
+<b><u>{RN-003} Profesor pertenece a departamento </u></b>
+Los profesores que imparten una asignatura deben
+pertenecer al departamento que asume la asignatura.
+
+<b><u>{RN-013} Grupos de docencia máximos </u></b>
+En un año académico un profesor no puede impartir 
+docencia en más de 5 grupos.
+
+<b><u>{RN-020} Profesor de teoría y prácticas </u></b>
+Cuando en una asignatura haya grupos de prácticas,
+el profesor del grupo de teoría, debe impartir alguno 
+de los grupos de prácticas.
+endnote
+
+@enduml

@@ -1,0 +1,141 @@
+@startuml
+'Opciones gráficas
+skinparam linetype ortho
+skinparam arrow {
+FontSize 20
+}
+'--------------------------------------
+'Enumerados
+'--------------------------------------
+
+enum E_DiaSemana <<Enum>>{
+    unes
+    martes
+    miercoles
+    jueves
+    viernes
+}
+enum E_MetodoAcceso <<Enum>>{
+    selectividad
+    ciclo
+    mayor
+    titulado_extranjero
+}
+
+enum E_TipoProfesor <<Enum>>{
+    catedratico
+    titular_de_universidad
+    profesor_contratado_doctor
+    profesor_ayudante_doctor
+}
+'--------------------------------------
+'Entidades
+'--------------------------------------
+class Alumno{
+    dni: String
+    nombre: String
+    apellidos: String
+    fecha_nacimiento: Date
+    email: String
+    metodo_acceso: E_MetodoAcceso
+}
+
+class CitaTutoria{
+    fecha: Date
+    hora: Time
+}
+
+class Profesor {
+    dni: String
+    nombre: String
+    apellidos: String
+    fecha_nacimiento: Date
+    email: String
+    categoria: E_TipoProfesor
+}
+class Tutoria{
+    dia_de_la_semana: E_DiaSemana
+    hora_comienzo: Time
+    hora_fin: Time
+}
+
+
+
+'--------------------------------------
+'Asociaciones
+'--------------------------------------
+
+
+Alumno "1" -- "*" CitaTutoria: " solicita >"
+Profesor "1" -- "*" Tutoria : " ofrece >"
+Tutoria "1" *-- "1" CitaTutoria
+
+
+' --------------------------------------
+' Restricciones
+' --------------------------------------
+note right of Alumno
+<b><u>{RN-004} Limitación créditos estudiante </u></b>
+Un alumno no puede matricularse en más de 90 
+créditos o menos de 30 en un curso académico.
+
+<b><u>{RN-008} Restricción de edad </u></b>
+Un alumno no puede acceder por selectividad 
+teniendo menos de 16 años.
+
+<b><u>{RN-009} Alumno pertenece a grupo </u></b>
+Un alumno no puede tener notas en grupos
+a los que no pertenece
+
+<b><u>{RN-019} Pertenencia de alumnos a grupos </u></b>
+Un alumno no puede pertenecer a más de un 
+grupo de teoría y a más de un grupo de prácticas
+ de cada asignatura.
+
+<b><u>{RN-017} Correos bien formados </u></b>
+Los correos tienen que estar bien 
+formados (contienen @, y un punto)
+endnote
+
+note bottom of CitaTutoria
+<b><u>{RN-005} Cita de tutoría en horas válidas </u></b>
+Una cita para tutoría estará definida por una 
+hora que debe estar entre la hora de comienzo
+y fin de la tutoría correspondiente
+
+<b><u>{RN-022} Citas para tutorías </u></b>
+Quiero Un alumno no podrá solicitar una 
+nueva tutoría mientras tenga una tutoría pendiente.
+endnote
+
+note top of Profesor
+<b><u>{RN-003} Profesor pertenece a departamento </u></b>
+Los profesores que imparten una asignatura deben
+pertenecer al departamento que asume la asignatura.
+
+<b><u>{RN-013} Grupos de docencia máximos </u></b>
+En un año académico un profesor no puede impartir 
+docencia en más de 5 grupos.
+
+<b><u>{RN-020} Profesor de teoría y prácticas </u></b>
+Cuando en una asignatura haya grupos de prácticas,
+el profesor del grupo de teoría, debe impartir alguno 
+de los grupos de prácticas.
+
+<b><u>{RN-017} Correos bien formados </u></b>
+Los correos tienen que estar bien formados
+(contienen @, y un punto)
+endnote
+
+note bottom of Tutoria
+<b><u>{RN-002} Limitación horas de tutoría </u></b>
+Un profesor no puede impartir >6h de
+tutoría a la semana.
+
+<b><u>{RN-018} Límite de tutorías PAD </u></b>
+Un profesor PAD no
+puede dar más de 2h de tutorías a la semana
+endnote
+
+
+@enduml

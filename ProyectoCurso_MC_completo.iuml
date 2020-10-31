@@ -1,0 +1,285 @@
+@startuml
+'Opciones gráficas
+skinparam linetype ortho
+skinparam arrow {
+FontSize 20
+}
+'--------------------------------------
+'Enumerados
+'--------------------------------------
+
+enum E_DiaSemana <<Enum>>{
+    lunes
+    martes
+    miercoles
+    jueves
+    viernes
+}
+
+enum E_MetodoAcceso <<Enum>>{
+    selectividad
+    ciclo
+    mayor
+    titulado_extranjero
+}
+
+enum E_TipoAsignatura <<Enum>>{
+    obligatoria
+    optativa
+    formacion_basica
+}
+
+enum E_TipoClase <<Enum>>{
+    teoria
+    laboratorio
+}
+
+enum E_TipoProfesor <<Enum>>{
+    catedratico
+    titular_de_universidad
+    profesor_contratado_doctor
+    profesor_ayudante_doctor
+}
+
+'--------------------------------------
+'Entidades
+'--------------------------------------
+
+class Alumno{
+    dni: String
+    nombre: String
+    apellidos: String
+    fecha_nacimiento: Date
+    email: String
+    metodo_acceso: E_MetodoAcceso
+}
+
+class Asignatura{
+    nombre: String
+    acronimo: String
+    creditos: Integer
+    curso: Integer
+    tipo: E_TipoAsignatura
+}
+
+class Aula{
+    tiene_megafonia: Boolean
+    tiene_proyector: Boolean
+    actividad: E_TipoClase
+}
+
+class CargaDocente{
+    carga_docente: Integer
+}
+
+class CitaTutoria{
+    fecha: Date
+    hora: Time
+}
+
+class Departamento{
+    nombre: String
+}
+
+class Despacho{
+}
+
+class Espacio{
+    nombre: String
+    planta: Integer
+    capacidad: Integer
+}
+
+class Grado{
+    nombre: String
+    num_anyos: Integer
+    num_creditos: Integer
+}
+
+class Grupo{
+    nombre:String
+    anyo_academico:Integer
+    creditos: Integer
+}
+
+class GrupoLab{
+}
+
+class GrupoTeo{
+}
+
+class Nota{
+    valor: Double
+    numero_convocatoria: Integer
+    matricula_honor: Boolean
+}
+
+class Profesor {
+    dni: String
+    nombre: String
+    apellidos: String
+    fecha_nacimiento: Date
+    email: String
+    categoria: E_TipoProfesor
+}
+
+class Tutoria{
+    dia_de_la_semana: E_DiaSemana
+    hora_comienzo: Time
+    hora_fin: Time
+}
+
+'--------------------------------------
+'Asociaciones
+'--------------------------------------
+
+Alumno "1..*" -- "1..*" Asignatura: "se matricula en >"
+Alumno "1" -- "*" CitaTutoria: " solicita >"
+Alumno "1..*" --* "1..*" Grupo
+Asignatura "1" --* "1..*" Grado
+Asignatura "1" -- "1..*" Departamento: "es coordinada por >"
+Departamento "1" *-- "1..*" Profesor: ""
+Espacio "1" o-- "0..1" Aula
+Espacio "1" o-- "0..1" Despacho: ""
+Grupo "1..*" --* "1" Asignatura: ""
+GrupoLab "0..*" --o "1" Grupo:""
+GrupoTeo "1..*" --* "1" Grupo: ""
+(GrupoTeo,Alumno) . Nota  
+Profesor "1" -- "*" Despacho: "tiene asignado >"
+Profesor "1..*" -- "1..*" Grupo: " da clase a >"
+Profesor "1" -- "*" Tutoria : " ofrece >"
+(Profesor,Grupo) . CargaDocente
+Tutoria "1" *-- "1" CitaTutoria
+
+' --------------------------------------
+' Restricciones
+' --------------------------------------
+
+note right of Alumno
+<b><u>{RN-004} Limitación créditos estudiante </u></b>
+Un alumno no puede matricularse en más de 90 
+créditos o menos de 30 en un curso académico.
+
+<b><u>{RN-008} Restricción de edad </u></b>
+Un alumno no puede acceder por selectividad 
+teniendo menos de 16 años.
+
+<b><u>{RN-009} Alumno pertenece a grupo </u></b>
+Un alumno no puede tener notas en grupos
+a los que no pertenece
+
+<b><u>{RN-019} Pertenencia de alumnos a grupos </u></b>
+Un alumno no puede pertenecer a más de un 
+grupo de teoría y a más de un grupo de prácticas
+ de cada asignatura.
+
+<b><u>{RN-017} Correos bien formados </u></b>
+Los correos tienen que estar bien 
+formados (contienen @, y un punto)
+endnote
+
+note right of Asignatura
+<b><u>{RN-012} Acrónimos bien formados </u></b>
+Un acrónimo tiene que estar bien formado,
+se entiende que lo está cuando coincide
+con las letras mayúsculas que aparecen 
+en el nombre de la asignatura
+endnote
+
+note bottom of Aula
+<b><u>{RN-015} Capacidad de aula máxima </u></b>
+Cada aula debe tener capacidad suficiente
+para los grupos que se imparten en la misma.
+
+<b><u>{RN-021} Aulas de teoría y prácticas </u></b>
+Los grupos de teoría se impartirán en aulas
+de teoría y los grupos de laboratorio en aulas de
+laboratorio.
+endnote
+
+note right of CargaDocente
+<b><u>{RN-001} Limitación créditos docentes </u></b>
+Un profesor no imparte >24 créditos por 
+curso académico.
+endnote
+
+note bottom of CitaTutoria
+<b><u>{RN-005} Cita de tutoría en horas válidas </u></b>
+Una cita para tutoría estará definida por una 
+hora que debe estar entre la hora de comienzo
+y fin de la tutoría correspondiente
+
+<b><u>{RN-022} Citas para tutorías </u></b>
+Quiero Un alumno no podrá solicitar una 
+nueva tutoría mientras tenga una tutoría pendiente.
+endnote
+
+note right of Departamento
+<b><u>{RN-014} Profesores por departamento </u></b>
+En cada departamento se tiene que cumplir
+ que #CU+#TU > #PCD+#PAD .
+endnote
+
+note right of Espacio
+<b><u>{RN-016} Nombre de espacios bien formados </u></b>
+El nombre de un espacio sigue el siguiente formato 
+(dependiendo de si es despacho o aula): {D|A}.{Planta}.{Natural}. 
+Ej: D.0.23 (despacho 23 de la planta baja), A.1.14
+(aula 14 de la planta 1).
+endnote
+
+note right of Grupo
+<b><u>{RN-011} Alumnos máximos en grupos </u></b>
+Un grupo de teoría no puede tener más de 75 alumnos, 
+y uno de laboratorio no más de 25.
+endnote
+
+note top of GrupoTeo 
+<b><u>{RI-008} Información sobre grupos </u></b>
+El nº de alumnos debe ser >15
+endnote 
+
+note top of Nota
+<b><u>{RN-006} Matrícula de honor </u></b>
+Para que una nota sea matrícula de honor 
+es necesario que su valor sea igual o
+superior a 9.
+
+<b><u>{RN-007} Nota por alumno </u></b>
+Un alumno no puede tener más de
+una nota para la misma asignatura, 
+convocatoria y añoacadémico
+
+<b><u>{RN-010} Cambios bruscos en notas </u></b>
+Una nota no puede alterarse de una vez
+en más de 4 puntos (aumentada o disminuida)
+endnote
+
+note top of Profesor
+<b><u>{RN-003} Profesor pertenece a departamento </u></b>
+Los profesores que imparten una asignatura deben
+pertenecer al departamento que asume la asignatura.
+
+<b><u>{RN-013} Grupos de docencia máximos </u></b>
+En un año académico un profesor no puede impartir 
+docencia en más de 5 grupos.
+
+<b><u>{RN-020} Profesor de teoría y prácticas </u></b>
+Cuando en una asignatura haya grupos de prácticas,
+el profesor del grupo de teoría, debe impartir alguno 
+de los grupos de prácticas.
+endnote
+
+note bottom of Tutoria
+<b><u>{RN-002} Limitación horas de tutoría </u></b>
+Un profesor no puede impartir >6h de
+tutoría a la semana.
+
+<b><u>{RN-018} Límite de tutorías PAD </u></b>
+Un profesor PAD no
+puede dar más de 2h de tutorías a la semana
+endnote
+
+
+
+@enduml
